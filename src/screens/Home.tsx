@@ -4,8 +4,9 @@ import { LAST_BACKUP_KEY } from '../db/backup';
 import { initials, useAll, useOpenSession, useProfile } from '../ui/data';
 import { Card, Empty, PhotoView, Stat } from '../ui/components';
 import { date, dateTime, int, num } from '../ui/format';
+import { OPTICS, PROPULSION } from '../ui/labels';
 import { navigate } from '../ui/router';
-import { bestGroups, bestScores, shotsSince, type Context } from '../lib/summary';
+import { badges, bestGroups, bestScores, shootingStreak, shotCountByWeapon, shotsSince, type Context } from '../lib/summary';
 import { startSession } from './actions';
 
 const BACKUP_EVERY_DAYS = 30;
@@ -39,18 +40,67 @@ export function Home() {
   const alerts = maintenanceAlerts(ctx);
   const backupDays = lastBackup ? (Date.now() - new Date(lastBackup).getTime()) / 86400000 : Infinity;
   const needsBackup = ctx.shots.length > 0 && backupDays > BACKUP_EVERY_DAYS;
+  const counts = shotCountByWeapon(ctx);
+  const allGroups = bestGroups(ctx);
+  const best = [...allGroups].sort((a, b) => a.moa - b.moa)[0];
+  const streak = shootingStreak(ctx.sessions.map((s) => s.startedAt));
+  const earned = badges(ctx).filter((b) => b.earned);
+  const weapons = ctx.weapons.filter((w) => !w.archived).sort((a, b) => a.name.localeCompare(b.name));
+  const hand = profile.dominantHand === 'zurdo' ? 'Zurdo' : profile.dominantHand === 'diestro' ? 'Diestro' : undefined;
+  const eye = profile.dominantEye ? `ojo ${profile.dominantEye === 'zurdo' ? 'izquierdo' : 'derecho'}` : undefined;
+  const facts = [
+    profile.startedShootingOn && `Tirando desde ${new Date(profile.startedShootingOn).getFullYear()}`,
+    hand,
+    eye,
+    profile.shootingGlasses && 'Gafas de tiro',
+  ].filter(Boolean) as string[];
+  const title = profile.nickname || profile.name || 'Bienvenido';
   const weaponName = (id: string) => ctx.weapons.find((w) => w.id === id)?.name ?? '—';
   const targetName = (id: string) => ctx.targets.find((t) => t.id === id)?.name ?? id;
 
   return (
     <section className="page">
-      <div className="hero" onClick={() => navigate('/perfil')}>
-        <PhotoView photoId={profile.avatarPhotoId} className="avatar lg" alt="" fallback={initials(profile)} />
-        <div>
-          <h1>{profile.nickname || profile.name || 'Bienvenido'}</h1>
-          <p className="muted">{profile.club}</p>
-        </div>
+      <div className="profile-head home-head">
+        <PhotoView photoId={profile.coverPhotoId} className="cover" alt="" />
+        <button className="btn small edit-profile" onClick={() => navigate('/perfil')}>
+          Editar perfil
+        </button>
+        <button className="avatar-btn" onClick={() => navigate('/perfil')} aria-label="Perfil">
+          <PhotoView photoId={profile.avatarPhotoId} className="avatar xl" alt="" fallback={initials(profile)} />
+        </button>
       </div>
+      <div className="profile-id">
+        <h1>{title}</h1>
+        {profile.nickname && profile.name && <p className="muted">{profile.name}</p>}
+        {profile.club && <p className="profile-club">📍 {profile.club}</p>}
+        {profile.bio && <p className="profile-bio">{profile.bio}</p>}
+        {facts.length > 0 && (
+          <div className="chips">
+            {facts.map((f) => (
+              <span key={f} className="chip">
+                {f}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="profile-stats">
+        <Stat label="disparos" value={int(ctx.shots.length)} />
+        <Stat label="sesiones" value={int(ctx.sessions.length)} />
+        <Stat label="mejor" value={best ? num(best.moa, 2) : '–'} sub={best ? `MOA a ${num(best.distanceM, 0)} m` : undefined} />
+        <Stat label="racha" value={streak.current} sub={`récord ${streak.longest}`} />
+      </div>
+
+      {earned.length > 0 && (
+        <div className="badge-strip">
+          {earned.map((b) => (
+            <span key={b.id} className="chip earned" title={b.description}>
+              🏅 {b.title}
+            </span>
+          ))}
+        </div>
+      )}
 
       {open ? (
         <button className="btn huge" onClick={() => navigate(`/sesion/${open.id}`)}>
@@ -76,6 +126,34 @@ export function Home() {
           🔧 {a.text}
         </Card>
       ))}
+
+      <div className="section-head">
+        <h2>Mis armas</h2>
+        <button className="btn small" onClick={() => navigate('/equipo')}>
+          Ver equipo
+        </button>
+      </div>
+      {weapons.length === 0 && <Empty>Añade tus armas en la pestaña Equipo y aparecerán aquí.</Empty>}
+      {weapons.map((w) => {
+        const wBest = allGroups.filter((g) => g.weaponId === w.id).sort((a, b) => a.moa - b.moa)[0];
+        const shots = (w.initialShotCount ?? 0) + (counts.get(w.id) ?? 0);
+        const details = [PROPULSION[w.propulsion], `${num(w.caliberMm, 2)} mm`, w.nominalEnergyJ ? `${num(w.nominalEnergyJ)} J` : '', OPTICS[w.optics]]
+          .filter(Boolean)
+          .join(' · ');
+        return (
+          <Card key={w.id} className="weapon-card mini" onClick={() => navigate(`/equipo/arma/${w.id}`)}>
+            <PhotoView photoId={w.photoId} className="weapon-photo" alt={w.name} fallback={w.type === 'pistola' ? '🔫' : '︻デ═一'} />
+            <div className="weapon-info">
+              <strong>{w.name}</strong>
+              {(w.brand || w.model) && <span className="muted">{[w.brand, w.model].filter(Boolean).join(' ')}</span>}
+              <span className="muted small">{details}</span>
+              <span className="small">
+                {int(shots)} disparos{wBest ? ` · mejor ${num(wBest.moa, 2)} MOA a ${num(wBest.distanceM, 0)} m` : ''}
+              </span>
+            </div>
+          </Card>
+        );
+      })}
 
       <h2>Última sesión</h2>
       {last ? (

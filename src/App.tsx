@@ -65,12 +65,15 @@ export function App() {
 
   return (
     <div className="app">
-      <header className="top">
-        <button className="avatar-btn" onClick={() => navigate('/perfil')} aria-label="Perfil">
-          <PhotoView photoId={profile.avatarPhotoId} className="avatar sm" alt="" fallback={initials(profile)} />
-        </button>
-        <span className="top-title">{profile.nickname || profile.name || 'Cuaderno de Tiro'}</span>
-      </header>
+      {/* En Inicio el perfil ya ocupa la cabecera de la página. */}
+      {route.length > 0 && (
+        <header className="top">
+          <button className="avatar-btn" onClick={() => navigate('/perfil')} aria-label="Perfil">
+            <PhotoView photoId={profile.avatarPhotoId} className="avatar sm" alt="" fallback={initials(profile)} />
+          </button>
+          <span className="top-title">{profile.nickname || profile.name || 'Cuaderno de Tiro'}</span>
+        </header>
+      )}
       <main>
         <Screen route={route} />
       </main>
