@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Profile } from '../db/types';
 import { badges, bestGroups, shootingStreak } from '../lib/summary';
+import { addTag, autoTags, MAX_TAG_LENGTH, profileTags } from '../lib/profile';
 import { Card, Page, PhotoPicker, PhotoView, SaveState, Segmented, Stat, TextInput, Toggle } from '../ui/components';
 import { initials, saveProfile, useAll, useLoadedProfile } from '../ui/data';
 import { int, num } from '../ui/format';
@@ -15,6 +16,7 @@ export function ProfileScreen() {
   const ctx = useAll();
   const stored = useLoadedProfile();
   const [p, setP] = useState<Profile>();
+  const [newTag, setNewTag] = useState('');
 
   useEffect(() => {
     if (stored && !p) setP(stored);
@@ -28,6 +30,11 @@ export function ProfileScreen() {
   const best = bestGroups(ctx)[0];
   const streak = shootingStreak(ctx.sessions.map((s) => s.startedAt));
   const earned = badges(ctx);
+  const tags = profileTags(p);
+  const pushTag = () => {
+    set({ tags: addTag(tags, newTag) });
+    setNewTag('');
+  };
 
   return (
     <Page title="Perfil" onBack actions={<SaveState status={status} />}>
@@ -76,6 +83,46 @@ export function ProfileScreen() {
         <Segmented label="Mano dominante" value={p.dominantHand} onChange={(dominantHand) => set({ dominantHand })} options={HANDS} allowNone />
         <Segmented label="Ojo dominante" value={p.dominantEye} onChange={(dominantEye) => set({ dominantEye })} options={HANDS} allowNone />
         <Toggle label="Uso gafas de tiro" value={p.shootingGlasses} onChange={(shootingGlasses) => set({ shootingGlasses })} />
+        <div className="field">
+          <span className="field-label">Etiquetas de Inicio</span>
+          {tags.length > 0 && (
+            <div className="chips left">
+              {tags.map((t) => (
+                <button key={t} className="chip removable" onClick={() => set({ tags: tags.filter((x) => x !== t) })} aria-label={`Quitar ${t}`}>
+                  {t} <span aria-hidden>✕</span>
+                </button>
+              ))}
+            </div>
+          )}
+          <form
+            className="tag-add"
+            onSubmit={(e) => {
+              e.preventDefault();
+              pushTag();
+            }}
+          >
+            <input
+              value={newTag}
+              maxLength={MAX_TAG_LENGTH}
+              placeholder="Ej.: Cazador de latas"
+              onChange={(e) => setNewTag(e.target.value)}
+              aria-label="Nueva etiqueta"
+            />
+            <button className="btn small" type="submit" disabled={!newTag.trim()}>
+              Añadir
+            </button>
+          </form>
+          <span className="field-hint">
+            {p.tags
+              ? 'Toca una etiqueta para quitarla.'
+              : 'Ahora salen las automáticas (mano, ojo, gafas…). En cuanto cambies algo, se quedan las tuyas.'}
+          </span>
+          {p.tags && autoTags(p).length > 0 && (
+            <button className="link" onClick={() => set({ tags: undefined })}>
+              Volver a las automáticas
+            </button>
+          )}
+        </div>
         <div className="save-bar">
           <button className="btn" onClick={() => void saveNow()}>
             Guardar

@@ -7,6 +7,7 @@ import { date, dateTime, int, num } from '../ui/format';
 import { OPTICS, PROPULSION } from '../ui/labels';
 import { navigate } from '../ui/router';
 import { badges, bestGroups, bestScores, shootingStreak, shotCountByWeapon, shotsSince, type Context } from '../lib/summary';
+import { profileTags } from '../lib/profile';
 import { startSession } from './actions';
 
 const BACKUP_EVERY_DAYS = 30;
@@ -46,14 +47,7 @@ export function Home() {
   const streak = shootingStreak(ctx.sessions.map((s) => s.startedAt));
   const earned = badges(ctx).filter((b) => b.earned);
   const weapons = ctx.weapons.filter((w) => !w.archived).sort((a, b) => a.name.localeCompare(b.name));
-  const hand = profile.dominantHand === 'zurdo' ? 'Zurdo' : profile.dominantHand === 'diestro' ? 'Diestro' : undefined;
-  const eye = profile.dominantEye ? `ojo ${profile.dominantEye === 'zurdo' ? 'izquierdo' : 'derecho'}` : undefined;
-  const facts = [
-    profile.startedShootingOn && `Tirando desde ${new Date(profile.startedShootingOn).getFullYear()}`,
-    hand,
-    eye,
-    profile.shootingGlasses && 'Gafas de tiro',
-  ].filter(Boolean) as string[];
+  const facts = profileTags(profile);
   const title = profile.nickname || profile.name || 'Bienvenido';
   const weaponName = (id: string) => ctx.weapons.find((w) => w.id === id)?.name ?? '—';
   const targetName = (id: string) => ctx.targets.find((t) => t.id === id)?.name ?? id;
@@ -72,7 +66,7 @@ export function Home() {
       <div className="profile-id">
         <h1>{title}</h1>
         {profile.nickname && profile.name && <p className="muted">{profile.name}</p>}
-        {profile.club && <p className="profile-club">📍 {profile.club}</p>}
+        {profile.club && <p className="profile-club">{profile.club}</p>}
         {profile.bio && <p className="profile-bio">{profile.bio}</p>}
         {facts.length > 0 && (
           <div className="chips">
@@ -100,16 +94,6 @@ export function Home() {
             </span>
           ))}
         </div>
-      )}
-
-      {open ? (
-        <button className="btn huge" onClick={() => navigate(`/sesion/${open.id}`)}>
-          Continuar sesión
-        </button>
-      ) : (
-        <button className="btn huge" onClick={startSession}>
-          Nueva sesión
-        </button>
       )}
 
       {needsBackup && (
@@ -195,6 +179,16 @@ export function Home() {
           <span className="muted">{date(s.date)}</span>
         </Card>
       ))}
+
+      {open ? (
+        <button className="btn huge" onClick={() => navigate(`/sesion/${open.id}`)}>
+          Continuar sesión
+        </button>
+      ) : (
+        <button className="btn huge" onClick={startSession}>
+          Nueva sesión
+        </button>
+      )}
     </section>
   );
 }

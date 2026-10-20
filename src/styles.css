@@ -950,6 +950,37 @@ input[type='range'] {
   font-size: 0.8rem;
 }
 
+.chips.left {
+  justify-content: flex-start;
+  margin: 0 0 8px;
+}
+
+.chip.removable {
+  width: auto;
+  min-height: var(--tap);
+  padding: 6px 14px;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.chip.removable span {
+  margin-left: 4px;
+  color: var(--muted);
+}
+
+.tag-add {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.tag-add .btn.small {
+  margin: 0;
+  flex-shrink: 0;
+}
+
 .chip.earned {
   border-color: var(--accent);
 }
