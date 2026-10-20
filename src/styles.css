@@ -381,6 +381,33 @@ main {
   align-items: center;
 }
 
+.save-state {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.save-state.saved {
+  color: var(--accent-ink);
+  font-weight: 700;
+}
+
+.save-state.error {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.save-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.save-bar .btn {
+  flex: 1;
+  margin: 0;
+}
+
 .field {
   display: block;
   margin: 10px 0;

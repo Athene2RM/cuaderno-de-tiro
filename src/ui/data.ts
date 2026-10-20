@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db, DEFAULT_PROFILE, getProfile } from '../db/db';
+import { db, DEFAULT_PROFILE, getProfile, updateProfile, type ProfilePatch } from '../db/db';
 import type { Profile } from '../db/types';
 import { BUILTIN_TARGETS, customRingTarget, type Target } from '../lib/targets';
 import type { Context } from '../lib/summary';
@@ -33,9 +33,8 @@ export function useLoadedProfile(): Profile | undefined {
   return useLiveQuery(() => getProfile());
 }
 
-export async function saveProfile(patch: Partial<Profile>): Promise<void> {
-  const p = await getProfile();
-  await db.profile.put({ ...p, ...patch, prefs: { ...p.prefs, ...patch.prefs } });
+export async function saveProfile(patch: ProfilePatch): Promise<void> {
+  await updateProfile(patch);
 }
 
 export function useOpenSession() {

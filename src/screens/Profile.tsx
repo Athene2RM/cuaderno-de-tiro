@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Profile } from '../db/types';
 import { badges, bestGroups, shootingStreak } from '../lib/summary';
-import { Card, Page, PhotoPicker, PhotoView, Segmented, Stat, TextInput, Toggle } from '../ui/components';
+import { Card, Page, PhotoPicker, PhotoView, SaveState, Segmented, Stat, TextInput, Toggle } from '../ui/components';
 import { initials, saveProfile, useAll, useLoadedProfile } from '../ui/data';
 import { int, num } from '../ui/format';
 import { useAutosave } from '../ui/autosave';
@@ -19,7 +19,9 @@ export function ProfileScreen() {
   useEffect(() => {
     if (stored && !p) setP(stored);
   }, [p, stored]);
-  useAutosave(p, (v) => saveProfile(v));
+  // Los ajustes (tema, colores, unidades) se cambian en Equipo: aquí no se
+  // guardan para no devolverlos a como estaban al abrir esta pantalla.
+  const { status, saveNow } = useAutosave(p, ({ prefs: _prefs, ...rest }) => saveProfile(rest));
 
   if (!ctx || !p) return null;
   const set = (patch: Partial<Profile>) => setP({ ...p, ...patch });
@@ -28,7 +30,7 @@ export function ProfileScreen() {
   const earned = badges(ctx);
 
   return (
-    <Page title="Perfil" onBack>
+    <Page title="Perfil" onBack actions={<SaveState status={status} />}>
       <div className="profile-head">
         <PhotoView photoId={p.coverPhotoId} className="cover" alt="" />
         <PhotoView photoId={p.avatarPhotoId} className="avatar xl" alt="" fallback={initials(p)} />
@@ -74,7 +76,14 @@ export function ProfileScreen() {
         <Segmented label="Mano dominante" value={p.dominantHand} onChange={(dominantHand) => set({ dominantHand })} options={HANDS} allowNone />
         <Segmented label="Ojo dominante" value={p.dominantEye} onChange={(dominantEye) => set({ dominantEye })} options={HANDS} allowNone />
         <Toggle label="Uso gafas de tiro" value={p.shootingGlasses} onChange={(shootingGlasses) => set({ shootingGlasses })} />
+        <div className="save-bar">
+          <button className="btn" onClick={() => void saveNow()}>
+            Guardar
+          </button>
+          <SaveState status={status} />
+        </div>
       </Card>
+      <p className="muted center">Los cambios también se guardan solos mientras escribes.</p>
       <p className="muted center">Las preferencias de unidades y tema están en Equipo › Ajustes.</p>
     </Page>
   );

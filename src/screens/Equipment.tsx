@@ -3,7 +3,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { getMeta, requestPersistentStorage } from '../db/db';
 import { exportBackup, exportShotsCsv, importBackup, LAST_BACKUP_KEY, markBackupDone } from '../db/backup';
 import { bestGroups, favoritePellet, remainingByLot, shotCountByWeapon } from '../lib/summary';
-import { Card, Empty, Page, PhotoView, Segmented, Stat, Toggle, confirmAction } from '../ui/components';
+import { Card, Empty, Page, PhotoView, SaveState, Segmented, Stat, Toggle, confirmAction } from '../ui/components';
+import type { SaveStatus } from '../ui/autosave';
 import { saveProfile, useAll, useProfile } from '../ui/data';
 import { date, int, num } from '../ui/format';
 import { PELLET_SHAPES, PROPULSION } from '../ui/labels';
@@ -52,6 +53,7 @@ export function Equipment() {
   const lastBackup = useLiveQuery(() => getMeta<string>(LAST_BACKUP_KEY));
   const [persisted, setPersisted] = useState<boolean>();
   const [message, setMessage] = useState<string>();
+  const [prefsStatus, setPrefsStatus] = useState<SaveStatus>('idle');
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -63,7 +65,18 @@ export function Equipment() {
   const groups = bestGroups(ctx);
   const remaining = remainingByLot(ctx);
   const prefs = profile.prefs;
-  const setPrefs = (p: Partial<typeof prefs>) => saveProfile({ prefs: { ...prefs, ...p } });
+  // Solo se envía lo que cambia: mandar todos los ajustes que se ven en
+  // pantalla podía deshacer un cambio anterior que aún no se había pintado.
+  const setPrefs = (p: Partial<typeof prefs>) => {
+    setPrefsStatus('saving');
+    saveProfile({ prefs: p }).then(
+      () => setPrefsStatus('saved'),
+      (e) => {
+        console.error('No se pudieron guardar los ajustes', e);
+        setPrefsStatus('error');
+      },
+    );
+  };
   const weapons = [...ctx.weapons].sort((a, b) => Number(!!a.archived) - Number(!!b.archived) || a.name.localeCompare(b.name));
 
   const doExport = async () => {
@@ -162,7 +175,10 @@ export function Equipment() {
           </Card>
         ))}
 
-      <h2>Ajustes</h2>
+      <div className="section-head">
+        <h2>Ajustes</h2>
+        <SaveState status={prefsStatus} />
+      </div>
       <Card>
         <Segmented
           label="Tema"
