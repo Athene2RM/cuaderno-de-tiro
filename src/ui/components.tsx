@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { cropSquare, loadImage, savePhoto, shrinkImage, usePhotoUrl, type Crop } from './image';
 import { back } from './router';
+import type { SaveStatus } from './autosave';
 
 export function parseNumber(s: string): number | undefined {
   const t = s.trim().replace(',', '.');
@@ -342,4 +343,21 @@ function CircleCropper({ file, onDone, onCancel }: { file: Blob; onDone: (b: Blo
 
 export function confirmAction(message: string): boolean {
   return window.confirm(message);
+}
+
+const SAVE_TEXT: Record<SaveStatus, string> = {
+  idle: '',
+  pending: 'Cambios sin guardar…',
+  saving: 'Guardando…',
+  saved: 'Guardado ✓',
+  error: 'No se pudo guardar',
+};
+
+/** Indicador de guardado: se lee en voz alta con lector de pantalla. */
+export function SaveState({ status }: { status: SaveStatus }) {
+  return (
+    <span className={`save-state ${status}`} role="status" aria-live="polite">
+      {SAVE_TEXT[status]}
+    </span>
+  );
 }

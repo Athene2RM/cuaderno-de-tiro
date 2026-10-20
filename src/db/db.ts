@@ -89,6 +89,21 @@ export async function getProfile(database: CuadernoDB = db): Promise<Profile> {
   return p ? { ...DEFAULT_PROFILE, ...p, prefs: { ...DEFAULT_PROFILE.prefs, ...p.prefs } } : DEFAULT_PROFILE;
 }
 
+export type ProfilePatch = Partial<Omit<Profile, 'id' | 'prefs'>> & { prefs?: Partial<Profile['prefs']> };
+
+/**
+ * Aplica un cambio parcial al perfil. Lee y escribe en la misma transacción,
+ * para que dos cambios seguidos (p. ej. fondo y acento) no se pisen entre sí.
+ */
+export async function updateProfile(patch: ProfilePatch, database: CuadernoDB = db): Promise<Profile> {
+  return database.transaction('rw', database.profile, async () => {
+    const p = await getProfile(database);
+    const next: Profile = { ...p, ...patch, id: 'me', prefs: { ...p.prefs, ...patch.prefs } };
+    await database.profile.put(next);
+    return next;
+  });
+}
+
 export async function getMeta<T>(key: string, database: CuadernoDB = db): Promise<T | undefined> {
   return (await database.meta.get(key))?.value as T | undefined;
 }
