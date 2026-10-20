@@ -3,7 +3,7 @@ import { getMeta } from '../db/db';
 import { LAST_BACKUP_KEY } from '../db/backup';
 import { initials, useAll, useOpenSession, useProfile } from '../ui/data';
 import { Card, Empty, PhotoView, Stat } from '../ui/components';
-import { date, dateTime, int, num } from '../ui/format';
+import { date, dateTime, int, num, weaponExtras } from '../ui/format';
 import { OPTICS, PROPULSION } from '../ui/labels';
 import { navigate } from '../ui/router';
 import { badges, bestGroups, bestScores, shootingStreak, shotCountByWeapon, shotsSince, type Context } from '../lib/summary';
@@ -46,7 +46,7 @@ export function Home() {
   const best = [...allGroups].sort((a, b) => a.moa - b.moa)[0];
   const streak = shootingStreak(ctx.sessions.map((s) => s.startedAt));
   const earned = badges(ctx).filter((b) => b.earned);
-  const weapons = ctx.weapons.filter((w) => !w.archived).sort((a, b) => a.name.localeCompare(b.name));
+  const weapons = ctx.weapons.filter((w) => !w.archived);
   const facts = profileTags(profile);
   const title = profile.nickname || profile.name || 'Bienvenido';
   const weaponName = (id: string) => ctx.weapons.find((w) => w.id === id)?.name ?? '—';
@@ -124,6 +124,7 @@ export function Home() {
         const details = [PROPULSION[w.propulsion], `${num(w.caliberMm, 2)} mm`, w.nominalEnergyJ ? `${num(w.nominalEnergyJ)} J` : '', OPTICS[w.optics]]
           .filter(Boolean)
           .join(' · ');
+        const extras = weaponExtras(w);
         return (
           <Card key={w.id} className="weapon-card mini" onClick={() => navigate(`/equipo/arma/${w.id}`)}>
             <PhotoView photoId={w.photoId} className="weapon-photo" alt={w.name} fallback={w.type === 'pistola' ? '🔫' : '︻デ═一'} />
@@ -131,6 +132,7 @@ export function Home() {
               <strong>{w.name}</strong>
               {(w.brand || w.model) && <span className="muted">{[w.brand, w.model].filter(Boolean).join(' ')}</span>}
               <span className="muted small">{details}</span>
+              {extras && <span className="muted small">{extras}</span>}
               <span className="small">
                 {int(shots)} disparos{wBest ? ` · mejor ${num(wBest.moa, 2)} MOA a ${num(wBest.distanceM, 0)} m` : ''}
               </span>

@@ -381,6 +381,11 @@ main {
   align-items: center;
 }
 
+.head-actions {
+  display: flex;
+  gap: 8px;
+}
+
 .save-state {
   font-size: 0.9rem;
   color: var(--muted);
@@ -787,6 +792,25 @@ input[type='range'] {
   display: flex;
   gap: 12px;
   align-items: center;
+}
+
+.weapon-info {
+  flex: 1;
+}
+
+.order-buttons {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.order-buttons .icon-btn {
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.order-buttons .icon-btn:disabled {
+  opacity: 0.3;
 }
 
 .weapon-card.archived {

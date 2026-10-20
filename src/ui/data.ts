@@ -3,6 +3,7 @@ import { db, DEFAULT_PROFILE, getProfile, updateProfile, type ProfilePatch } fro
 import type { Profile } from '../db/types';
 import { BUILTIN_TARGETS, customRingTarget, type Target } from '../lib/targets';
 import type { Context } from '../lib/summary';
+import { sortWeapons } from '../lib/weapons';
 
 /**
  * Todos los datos en memoria. Para un uso personal (miles de disparos) es
@@ -20,7 +21,8 @@ export function useAll(): Context | undefined {
       db.targets.toArray(),
     ]);
     const targets: Target[] = [...BUILTIN_TARGETS, ...custom.map((t) => customRingTarget(t.id, t.name, t.rings))];
-    return { weapons, pellets, lots, sessions, series, shots, targets };
+    // Las armas salen ya en el orden elegido a mano, para todas las listas.
+    return { weapons: sortWeapons(weapons), pellets, lots, sessions, series, shots, targets };
   });
 }
 

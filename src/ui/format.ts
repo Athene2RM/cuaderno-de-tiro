@@ -1,3 +1,5 @@
+import type { Weapon } from '../db/types';
+
 const nf = (digits: number) => new Intl.NumberFormat('es-ES', { maximumFractionDigits: digits, minimumFractionDigits: digits });
 const cache = new Map<number, Intl.NumberFormat>();
 
@@ -38,4 +40,20 @@ export function toLocalInput(iso?: string): string {
 
 export function fromLocalInput(v: string): string | undefined {
   return v ? new Date(v).toISOString() : undefined;
+}
+
+/** Peso guardado en gramos, mostrado en kg. */
+export function kg(grams?: number): string {
+  return grams ? `${num(grams / 1000, 2)} kg` : '–';
+}
+
+/** Línea con cargador, peso y complementos de un arma; vacía si no hay datos. */
+export function weaponExtras(w: Weapon): string {
+  return [
+    w.magazineCapacity ? `Cargador de ${int(w.magazineCapacity)}` : '',
+    w.weightG ? kg(w.weightG) : '',
+    ...(w.accessories ?? []),
+  ]
+    .filter(Boolean)
+    .join(' · ');
 }

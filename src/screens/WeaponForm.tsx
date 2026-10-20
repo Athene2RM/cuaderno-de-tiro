@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { db, newId, nowIso } from '../db/db';
 import type { Weapon } from '../db/types';
 import { shotsSince } from '../lib/summary';
+import { addAccessory, MAX_ACCESSORY_LENGTH, nextSortOrder } from '../lib/weapons';
 import {
   Card, Empty, NumberInput, Page, PhotoPicker, PhotoView, Segmented, Select, TextInput, Toggle, confirmAction,
 } from '../ui/components';
@@ -30,6 +31,7 @@ export function WeaponForm({ id }: { id?: string }) {
   const ctx = useAll();
   const isNew = !id || id === 'nueva';
   const [w, setW] = useState<Weapon>();
+  const [newAccessory, setNewAccessory] = useState('');
 
   useEffect(() => {
     if (w || !ctx) return;
@@ -43,9 +45,22 @@ export function WeaponForm({ id }: { id?: string }) {
   const otherCaliber = !CALIBERS.some((c) => c.value === w.caliberMm);
   const since = isNew ? 0 : shotsSince(ctx, w.id, w.lastMaintenanceOn);
   const used = ctx.series.some((s) => s.weaponId === w.id);
+  const accessories = w.accessories ?? [];
+  const pushAccessory = () => {
+    set({ accessories: addAccessory(accessories, newAccessory) });
+    setNewAccessory('');
+  };
 
   const save = async () => {
-    await db.weapons.put({ ...w, name: w.name.trim() || [w.brand, w.model].filter(Boolean).join(' ') || 'Sin nombre' });
+    // Un complemento escrito pero sin pulsar «Añadir» también se guarda.
+    const acc = addAccessory(accessories, newAccessory);
+    await db.weapons.put({
+      ...w,
+      name: w.name.trim() || [w.brand, w.model].filter(Boolean).join(' ') || 'Sin nombre',
+      accessories: acc.length ? acc : undefined,
+      // Las armas nuevas van al final del orden manual.
+      sortOrder: w.sortOrder ?? (isNew ? nextSortOrder(ctx.weapons) : undefined),
+    });
     back('/equipo');
   };
 
@@ -75,6 +90,57 @@ export function WeaponForm({ id }: { id?: string }) {
           <NumberInput label="Longitud de cañón" unit="mm" value={w.barrelLengthMm} onChange={(barrelLengthMm) => set({ barrelLengthMm })} />
           <TextInput label="Paso de estriado" value={w.twist} onChange={(twist) => set({ twist })} placeholder="1:450 mm" />
         </div>
+        <div className="grid2">
+          <NumberInput
+            label="Cargador"
+            unit="balines"
+            value={w.magazineCapacity}
+            onChange={(magazineCapacity) => set({ magazineCapacity })}
+          />
+          <NumberInput
+            label="Peso"
+            unit="kg"
+            value={w.weightG !== undefined ? w.weightG / 1000 : undefined}
+            onChange={(v) => set({ weightG: v !== undefined ? Math.round(v * 1000) : undefined })}
+          />
+        </div>
+      </Card>
+
+      <h2>Complementos</h2>
+      <Card>
+        {accessories.length > 0 && (
+          <div className="chips left">
+            {accessories.map((a) => (
+              <button
+                key={a}
+                className="chip removable"
+                onClick={() => set({ accessories: accessories.filter((x) => x !== a) })}
+                aria-label={`Quitar ${a}`}
+              >
+                {a} <span aria-hidden>✕</span>
+              </button>
+            ))}
+          </div>
+        )}
+        <form
+          className="tag-add"
+          onSubmit={(e) => {
+            e.preventDefault();
+            pushAccessory();
+          }}
+        >
+          <input
+            value={newAccessory}
+            maxLength={MAX_ACCESSORY_LENGTH}
+            placeholder="Ej.: Linterna/láser verde"
+            onChange={(e) => setNewAccessory(e.target.value)}
+            aria-label="Nuevo complemento"
+          />
+          <button className="btn small" type="submit" disabled={!newAccessory.trim()}>
+            Añadir
+          </button>
+        </form>
+        <span className="field-hint">Linterna, láser, bípode, moderador, empuñadura… Toca uno para quitarlo.</span>
       </Card>
 
       <h2>Óptica</h2>

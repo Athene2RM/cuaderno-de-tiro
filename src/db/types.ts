@@ -57,6 +57,14 @@ export interface Weapon {
   zeroDistanceM?: number;
   fillPressureBar?: number;
   workingPressureBar?: number;
+  /** Capacidad del cargador, en balines. */
+  magazineCapacity?: number;
+  /** Peso del arma en gramos (se muestra en kg). */
+  weightG?: number;
+  /** Complementos montados, escritos a mano (linterna, láser, bípode…). */
+  accessories?: string[];
+  /** Posición en el orden manual de las armas; sin definir, va al final. */
+  sortOrder?: number;
   /** Disparos hechos antes de usar la app; la app suma los registrados. */
   initialShotCount?: number;
   lastMaintenanceOn?: string;
