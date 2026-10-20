@@ -10,6 +10,8 @@
   --warn-bg: #fff3d6;
   --warn-text: #6b4a00;
   --on-accent: #1b1f24;
+  /* Acento para texto e iconos; App lo cambia si no se lee sobre el fondo. */
+  --accent-ink: var(--accent);
   --card-paper: #f6f3ea;
   --ring-dark: #1b1f24;
   --mpi: #2a7de1;
@@ -20,12 +22,14 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --bg: #101418;
-    --surface: #1a2027;
-    --surface-2: #232b34;
+    /* El fondo oscuro es elegible (--bg-dark lo pone App) y las superficies se
+       aclaran a partir de él. */
+    --bg: var(--bg-dark, #101418);
+    --surface: color-mix(in srgb, var(--bg) 95%, #ffffff);
+    --surface-2: color-mix(in srgb, var(--bg) 91%, #ffffff);
     --text: #e9ecef;
     --muted: #9aa4ae;
-    --border: #2e3843;
+    --border: color-mix(in srgb, var(--bg) 84%, #ffffff);
     --warn-bg: #3a2f14;
     --warn-text: #f5d58a;
     --mpi: #5aa8ff;
@@ -34,12 +38,14 @@
 }
 
 :root[data-theme='dark'] {
-  --bg: #101418;
-  --surface: #1a2027;
-  --surface-2: #232b34;
+  /* El fondo oscuro es elegible (--bg-dark lo pone App) y las superficies se
+     aclaran a partir de él. */
+  --bg: var(--bg-dark, #101418);
+  --surface: color-mix(in srgb, var(--bg) 95%, #ffffff);
+  --surface-2: color-mix(in srgb, var(--bg) 91%, #ffffff);
   --text: #e9ecef;
   --muted: #9aa4ae;
-  --border: #2e3843;
+  --border: color-mix(in srgb, var(--bg) 84%, #ffffff);
   --warn-bg: #3a2f14;
   --warn-text: #f5d58a;
   --mpi: #5aa8ff;
@@ -209,7 +215,7 @@ main {
 }
 
 .tabs a.on .tab-icon {
-  color: var(--accent);
+  color: var(--accent-ink);
 }
 
 .tab-icon {
@@ -345,7 +351,7 @@ main {
 .link {
   border: 0;
   background: none;
-  color: var(--accent);
+  color: var(--accent-ink);
   text-decoration: underline;
   padding: 0;
   cursor: pointer;
@@ -584,7 +590,7 @@ input[type='range'] {
 
 .clicks {
   font-weight: 700;
-  color: var(--accent);
+  color: var(--accent-ink);
 }
 
 /* Diana */
@@ -689,6 +695,7 @@ input[type='range'] {
 
 .zoom-bar button.on {
   background: var(--accent);
+  color: var(--on-accent);
 }
 
 .nudge {
@@ -807,19 +814,26 @@ input[type='range'] {
 
 .accents {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
 .accents button {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   border: 3px solid transparent;
+  /* Contorno fino para que los tonos oscuros se vean sobre el fondo oscuro. */
+  box-shadow: 0 0 0 1px var(--border);
   cursor: pointer;
 }
 
 .accents button.on {
   border-color: var(--text);
+}
+
+.accents.swatches button {
+  border-radius: 12px;
 }
 
 /* Perfil */

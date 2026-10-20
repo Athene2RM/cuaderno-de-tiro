@@ -77,6 +77,7 @@ export const DEFAULT_PROFILE: Profile = {
     theme: 'system',
     highContrast: false,
     accent: '#e8a33d',
+    darkBackground: '#101418',
     angularUnit: 'moa',
     windUnit: 'ms',
     weightUnit: 'gr',

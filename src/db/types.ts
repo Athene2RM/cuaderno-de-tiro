@@ -23,6 +23,8 @@ export interface Profile {
     theme: ThemeMode;
     highContrast: boolean;
     accent: string;
+    /** Fondo del modo oscuro, en hex. */
+    darkBackground: string;
     angularUnit: AngularUnit;
     windUnit: 'ms' | 'kmh';
     weightUnit: 'g' | 'gr';
