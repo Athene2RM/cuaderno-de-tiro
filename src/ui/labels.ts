@@ -16,7 +16,7 @@ export const PROPULSION: Record<Propulsion, string> = {
   muelle: 'Muelle',
   piston: 'Pistón',
   // Clave antigua "gasram": se mantiene para no migrar las armas guardadas.
-  gasram: 'Nitro-pistón (gas ram)',
+  gasram: 'Nitro-pistón',
   co2: 'CO2',
   ssp: 'Aire precargado (SSP)',
   multibombeo: 'Multibombeo',

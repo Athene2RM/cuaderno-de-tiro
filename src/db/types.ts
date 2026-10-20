@@ -19,6 +19,8 @@ export interface Profile {
   shootingGlasses?: boolean;
   avatarPhotoId?: string;
   coverPhotoId?: string;
+  /** Etiquetas escritas a mano para Inicio. Sin definir, se usan las automáticas. */
+  tags?: string[];
   prefs: {
     theme: ThemeMode;
     highContrast: boolean;
