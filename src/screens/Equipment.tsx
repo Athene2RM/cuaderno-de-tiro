@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { getMeta, requestPersistentStorage } from '../db/db';
+import { db, getMeta, requestPersistentStorage } from '../db/db';
 import { exportBackup, exportShotsCsv, importBackup, LAST_BACKUP_KEY, markBackupDone } from '../db/backup';
 import { bestGroups, favoritePellet, remainingByLot, shotCountByWeapon } from '../lib/summary';
 import { Card, Empty, Page, PhotoView, SaveState, Segmented, Stat, Toggle, confirmAction } from '../ui/components';
 import type { SaveStatus } from '../ui/autosave';
 import { saveProfile, useAll, useProfile } from '../ui/data';
-import { date, int, num } from '../ui/format';
+import { date, int, num, weaponExtras } from '../ui/format';
 import { PELLET_SHAPES, PROPULSION } from '../ui/labels';
 import { navigate } from '../ui/router';
 import { gramsToGrains } from '../lib/units';
+import { moveWeapon, sortWeaponsArchivedLast } from '../lib/weapons';
 
 function download(content: BlobPart, filename: string, type: string) {
   const url = URL.createObjectURL(new Blob([content], { type }));
@@ -53,6 +54,7 @@ export function Equipment() {
   const lastBackup = useLiveQuery(() => getMeta<string>(LAST_BACKUP_KEY));
   const [persisted, setPersisted] = useState<boolean>();
   const [message, setMessage] = useState<string>();
+  const [ordering, setOrdering] = useState(false);
   const [prefsStatus, setPrefsStatus] = useState<SaveStatus>('idle');
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -77,7 +79,14 @@ export function Equipment() {
       },
     );
   };
-  const weapons = [...ctx.weapons].sort((a, b) => Number(!!a.archived) - Number(!!b.archived) || a.name.localeCompare(b.name));
+  const weapons = sortWeaponsArchivedLast(ctx.weapons);
+  // Guarda la posición de todas, para que las que no tenían orden queden fijas.
+  const move = async (id: string, delta: -1 | 1) => {
+    const order = moveWeapon(weapons, id, delta);
+    await db.transaction('rw', db.weapons, async () => {
+      for (const [wid, sortOrder] of order) await db.weapons.update(wid, { sortOrder });
+    });
+  };
 
   const doExport = async () => {
     const data = await exportBackup();
@@ -101,28 +110,57 @@ export function Equipment() {
     <Page title="Equipo">
       <div className="section-head">
         <h2>Armas</h2>
-        <button className="btn small" onClick={() => navigate('/equipo/arma/nueva')}>
-          + Arma
-        </button>
+        <div className="head-actions">
+          {weapons.length > 1 && (
+            <button className={`btn small ${ordering ? '' : 'secondary'}`} onClick={() => setOrdering(!ordering)}>
+              {ordering ? 'Hecho' : 'Ordenar'}
+            </button>
+          )}
+          {!ordering && (
+            <button className="btn small" onClick={() => navigate('/equipo/arma/nueva')}>
+              + Arma
+            </button>
+          )}
+        </div>
       </div>
+      {ordering && <p className="muted small">Usa las flechas para colocar las armas en el orden que quieras. Se aplica en toda la app.</p>}
       {weapons.length === 0 && <Empty>Añade tu primera arma para empezar a registrar series.</Empty>}
       {weapons.map((w) => {
         const best = groups.filter((g) => g.weaponId === w.id).sort((a, b) => a.moa - b.moa)[0];
         const fav = ctx.pellets.find((p) => p.id === favoritePellet(ctx, w.id));
+        const extras = weaponExtras(w);
+        const i = weapons.indexOf(w);
         return (
-          <Card key={w.id} className={`weapon-card ${w.archived ? 'archived' : ''}`} onClick={() => navigate(`/equipo/arma/${w.id}`)}>
+          <Card
+            key={w.id}
+            className={`weapon-card ${w.archived ? 'archived' : ''}`}
+            onClick={ordering ? undefined : () => navigate(`/equipo/arma/${w.id}`)}
+          >
             <PhotoView photoId={w.photoId} className="weapon-photo" alt={w.name} fallback={w.type === 'pistola' ? '🔫' : '︻デ═一'} />
             <div className="weapon-info">
               <strong>{w.name}</strong>
               <span className="muted">
                 {[w.brand, w.model].filter(Boolean).join(' ')} · {PROPULSION[w.propulsion]} · {num(w.caliberMm, 2)} mm
               </span>
-              <div className="stats-row">
-                <Stat label="disparos" value={int((w.initialShotCount ?? 0) + (counts.get(w.id) ?? 0))} />
-                <Stat label="mejor" value={best ? `${num(best.moa, 2)} MOA` : '–'} sub={best ? `${num(best.distanceM, 0)} m` : undefined} />
-                <Stat label="favorito" value={fav ? fav.model || fav.brand : '–'} />
-              </div>
+              {extras && <span className="muted small">{extras}</span>}
+              {!ordering && (
+                <div className="stats-row">
+                  <Stat label="disparos" value={int((w.initialShotCount ?? 0) + (counts.get(w.id) ?? 0))} />
+                  <Stat label="mejor" value={best ? `${num(best.moa, 2)} MOA` : '–'} sub={best ? `${num(best.distanceM, 0)} m` : undefined} />
+                  <Stat label="favorito" value={fav ? fav.model || fav.brand : '–'} />
+                </div>
+              )}
             </div>
+            {ordering && (
+              <div className="order-buttons">
+                <button className="icon-btn" disabled={i === 0} onClick={() => move(w.id, -1)} aria-label={`Subir ${w.name}`}>
+                  ▲
+                </button>
+                <button className="icon-btn" disabled={i === weapons.length - 1} onClick={() => move(w.id, 1)} aria-label={`Bajar ${w.name}`}>
+                  ▼
+                </button>
+              </div>
+            )}
           </Card>
         );
       })}

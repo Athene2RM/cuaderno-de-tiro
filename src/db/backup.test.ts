@@ -7,6 +7,7 @@ async function seed(db: CuadernoDB) {
   await db.weapons.put({
     id: 'w1', name: 'La Negra', brand: 'Weihrauch', model: 'HW100', type: 'carabina', propulsion: 'pcp',
     caliberMm: 4.5, optics: 'visor', createdAt: '2026-10-01T00:00:00Z',
+    magazineCapacity: 14, weightG: 3850, accessories: ['Linterna/láser verde', 'Bípode'], sortOrder: 0,
   });
   await db.sessions.put({ id: 's1', startedAt: '2026-10-01T10:00:00Z', place: 'La finca', notes: '', weather: { windSpeedMs: 2 } });
   await db.series.put({
