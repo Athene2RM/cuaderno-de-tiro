@@ -13,8 +13,10 @@ export const WEAPON_TYPES: Record<WeaponType, string> = { carabina: 'Carabina', 
 
 export const PROPULSION: Record<Propulsion, string> = {
   pcp: 'PCP',
-  muelle: 'Muelle / pistón',
-  gasram: 'Gas ram',
+  muelle: 'Muelle',
+  piston: 'Pistón',
+  // Clave antigua "gasram": se mantiene para no migrar las armas guardadas.
+  gasram: 'Nitro-pistón (gas ram)',
   co2: 'CO2',
   ssp: 'Aire precargado (SSP)',
   multibombeo: 'Multibombeo',
