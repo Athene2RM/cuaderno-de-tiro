@@ -13,20 +13,21 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg'],
       manifest: {
-        name: 'Cuaderno de tiro',
-        short_name: 'Cuaderno',
+        name: 'Cuaderno de Tiro',
+        // Android usa short_name bajo el icono y en la pantalla de inicio.
+        short_name: 'Cuaderno de Tiro',
         description: 'Registro personal y offline de tiro con aire comprimido',
         lang: 'es',
         start_url: base,
         scope: base,
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#101418',
-        theme_color: '#101418',
+        background_color: '#141916',
+        theme_color: '#141916',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {

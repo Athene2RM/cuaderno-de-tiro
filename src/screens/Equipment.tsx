@@ -25,7 +25,26 @@ function stamp() {
   return new Date().toISOString().slice(0, 10);
 }
 
-const ACCENTS = ['#e8a33d', '#3d9be8', '#4caf6a', '#e85b3d', '#a46be8'];
+const ACCENTS = [
+  '#e8a33d',
+  '#3d9be8',
+  '#4caf6a',
+  '#e85b3d',
+  '#a46be8',
+  // Tonos militares
+  '#2a2f2a',
+  '#4a4f48',
+  '#7d7f73',
+  '#dcd9cf',
+];
+
+const DARK_BACKGROUNDS = [
+  { value: '#101418', label: 'Azul noche (original)' },
+  { value: '#000000', label: 'Negro' },
+  { value: '#1c1c1c', label: 'Gris oscuro' },
+  { value: '#2b2b2b', label: 'Gris' },
+  { value: '#141916', label: 'Verde militar' },
+];
 
 export function Equipment() {
   const ctx = useAll();
@@ -156,6 +175,22 @@ export function Equipment() {
           ]}
         />
         <Toggle label="Alto contraste (pleno sol)" value={prefs.highContrast} onChange={(highContrast) => setPrefs({ highContrast })} />
+        <div className="field">
+          <span className="field-label">Fondo oscuro</span>
+          <div className="accents swatches">
+            {DARK_BACKGROUNDS.map((b) => (
+              <button
+                key={b.value}
+                className={b.value === prefs.darkBackground ? 'on' : ''}
+                style={{ background: b.value }}
+                // Los fondos son todos oscuros: elegir uno pasa el tema a oscuro.
+                onClick={() => setPrefs({ darkBackground: b.value, theme: 'dark' })}
+                aria-label={`Fondo ${b.label}`}
+                title={b.label}
+              />
+            ))}
+          </div>
+        </div>
         <div className="field">
           <span className="field-label">Color de acento</span>
           <div className="accents">

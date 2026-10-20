@@ -13,6 +13,7 @@ import { PelletForm, LotForm } from './screens/PelletForm';
 import { TargetForm } from './screens/TargetForm';
 import { ProfileScreen } from './screens/Profile';
 import type { Profile } from './db/types';
+import { accentInk, inkOn, toHex } from './lib/colors';
 
 const TABS = [
   { path: '', label: 'Inicio', icon: '⌂' },
@@ -32,11 +33,27 @@ function tabFor(route: string[]): string {
 function useTheme(profile: Profile) {
   useEffect(() => {
     const root = document.documentElement;
-    const { theme, highContrast, accent } = profile.prefs;
+    const { theme, highContrast, accent, darkBackground } = profile.prefs;
     if (theme === 'system') root.removeAttribute('data-theme');
     else root.setAttribute('data-theme', theme);
     root.toggleAttribute('data-contrast', highContrast);
     root.style.setProperty('--accent', accent);
+    root.style.setProperty('--bg-dark', darkBackground);
+
+    // La tinta sobre el acento, el acento como texto y el color de la barra del
+    // sistema dependen del fondo real, que en "Automático" cambia con el móvil.
+    const apply = () => {
+      const css = getComputedStyle(root);
+      const bg = toHex(css.getPropertyValue('--bg')) ?? '#101418';
+      const text = toHex(css.getPropertyValue('--text')) ?? '#e9ecef';
+      root.style.setProperty('--on-accent', inkOn(accent));
+      root.style.setProperty('--accent-ink', accentInk(accent, bg, text));
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', bg);
+    };
+    apply();
+    const media = matchMedia('(prefers-color-scheme: dark)');
+    media.addEventListener('change', apply);
+    return () => media.removeEventListener('change', apply);
   }, [profile.prefs]);
 }
 
@@ -52,7 +69,7 @@ export function App() {
         <button className="avatar-btn" onClick={() => navigate('/perfil')} aria-label="Perfil">
           <PhotoView photoId={profile.avatarPhotoId} className="avatar sm" alt="" fallback={initials(profile)} />
         </button>
-        <span className="top-title">{profile.nickname || profile.name || 'Cuaderno de tiro'}</span>
+        <span className="top-title">{profile.nickname || profile.name || 'Cuaderno de Tiro'}</span>
       </header>
       <main>
         <Screen route={route} />
