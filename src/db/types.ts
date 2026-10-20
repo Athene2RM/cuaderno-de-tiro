@@ -32,7 +32,7 @@ export interface Profile {
 }
 
 export type WeaponType = 'carabina' | 'pistola';
-export type Propulsion = 'pcp' | 'muelle' | 'gasram' | 'co2' | 'ssp' | 'multibombeo';
+export type Propulsion = 'pcp' | 'muelle' | 'piston' | 'gasram' | 'co2' | 'ssp' | 'multibombeo';
 export type Optics = 'abiertas' | 'puntoRojo' | 'visor';
 
 export interface Weapon {

@@ -56,7 +56,7 @@ Un único perfil, el tuyo, presentado con el cuidado de una app social aunque no
 | --- | --- | --- |
 | Nombre propio, marca, modelo | texto | |
 | Tipo | carabina · pistola | |
-| Sistema de propulsión | PCP · muelle/pistón · gas ram · CO2 · aire precargado (SSP) · multibombeo | Clave: el CO2 varía mucho con la temperatura y el PCP con la presión |
+| Sistema de propulsión | PCP · muelle · pistón · nitro-pistón (gas ram) · CO2 · aire precargado (SSP) · multibombeo | Clave: el CO2 varía mucho con la temperatura y el PCP con la presión |
 | Calibre | 4,5 mm (.177) · 5,5 mm (.22) · 6,35 mm (.25) · otro | |
 | Energía nominal | J | La fuerza se mide en julios de energía en boca, no en newtons |
 | Longitud de cañón, estriado | mm, paso | Opcional |
