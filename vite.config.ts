@@ -2,8 +2,8 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-// En GitHub Pages la app vive en /cuaderno-tiro/; en local, en la raíz.
-const base = process.env.GITHUB_PAGES ? '/cuaderno-tiro/' : '/';
+// En GitHub Pages la app vive en /cuaderno-de-tiro/; en local, en la raíz.
+const base = process.env.GITHUB_PAGES ? '/cuaderno-de-tiro/' : '/';
 
 export default defineConfig({
   base,

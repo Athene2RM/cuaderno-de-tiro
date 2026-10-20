@@ -39,4 +39,4 @@ PWA personal y offline para registrar tiro con aire comprimido. La especificaci�
 
 ## Publicación
 
-Cada push a `main` ejecuta los tests y publica en GitHub Pages (`.github/workflows/deploy.yml`) con base `/cuaderno-tiro/`. En el repositorio, Settings › Pages › Source debe estar en "GitHub Actions".
+Cada push a `main` ejecuta los tests y publica en GitHub Pages (`.github/workflows/deploy.yml`) con base `/cuaderno-de-tiro/`. En el repositorio, Settings › Pages › Source debe estar en "GitHub Actions".
