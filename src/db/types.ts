@@ -33,7 +33,8 @@ export interface Profile {
   };
 }
 
-export type WeaponType = 'carabina' | 'pistola';
+export type WeaponType = 'carabina' | 'pistola' | 'revolver';
+export type FiringAction = 'manual' | 'dobleAccion' | 'semiauto' | 'auto';
 export type Propulsion = 'pcp' | 'muelle' | 'piston' | 'gasram' | 'co2' | 'ssp' | 'multibombeo';
 export type Optics = 'abiertas' | 'puntoRojo' | 'visor';
 
@@ -44,6 +45,8 @@ export interface Weapon {
   model: string;
   type: WeaponType;
   propulsion: Propulsion;
+  /** Mecanismo de disparo. */
+  action?: FiringAction;
   caliberMm: number;
   nominalEnergyJ?: number;
   barrelLengthMm?: number;

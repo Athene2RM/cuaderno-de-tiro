@@ -5,6 +5,7 @@ import type { Series, Shot } from '../db/types';
 import { suggestClicks } from '../lib/corrections';
 import { toAngular } from '../lib/grouping';
 import type { Context } from '../lib/summary';
+import { isHandgun } from '../lib/weapons';
 import { caliberFor, summarizeSeries } from '../lib/summary';
 import { scoreShot } from '../lib/targets';
 import { useAutosave } from '../ui/autosave';
@@ -57,7 +58,7 @@ function SeriesFields({ value, set, ctx }: { value: Series; set: (p: Partial<Ser
         value={value.support}
         onChange={(v) => v && set({ support: v })}
         options={options(SUPPORTS).filter((o) =>
-          weapon?.type === 'pistola' ? true : o.value !== 'dosManos' && o.value !== 'unaMano',
+          isHandgun(weapon?.type) ? true : o.value !== 'dosManos' && o.value !== 'unaMano',
         )}
       />
       <div className="grid2">
@@ -80,7 +81,7 @@ export function NewSeries({ sessionId }: { sessionId: string }) {
     if (!ctx || !defaults || draft) return;
     const active = ctx.weapons.filter((w) => !w.archived);
     const weapon = active.find((w) => w.id === defaults.weaponId) ?? active[0];
-    const pistol = weapon?.type === 'pistola';
+    const pistol = isHandgun(weapon?.type);
     setDraft({
       id: newId(),
       sessionId,

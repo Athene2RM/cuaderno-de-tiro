@@ -8,7 +8,8 @@ import {
 } from '../ui/components';
 import { useAll } from '../ui/data';
 import { int } from '../ui/format';
-import { CALIBERS, OPTICS, options, PROPULSION, WEAPON_TYPES } from '../ui/labels';
+import { CALIBERS, FIRING_ACTIONS, OPTICS, options, PROPULSION, WEAPON_TYPES } from '../ui/labels';
+import { caliberInches } from '../lib/units';
 import { back } from '../ui/router';
 
 function blank(): Weapon {
@@ -77,6 +78,13 @@ export function WeaponForm({ id }: { id?: string }) {
           <TextInput label="Modelo" value={w.model} onChange={(model) => set({ model })} />
         </div>
         <Segmented label="Tipo" value={w.type} onChange={(type) => type && set({ type })} options={options(WEAPON_TYPES)} />
+        <Segmented
+          label="Mecanismo de disparo"
+          value={w.action}
+          onChange={(action) => set({ action })}
+          allowNone
+          options={options(FIRING_ACTIONS)}
+        />
         <Select label="Sistema de propulsión" value={w.propulsion} onChange={(propulsion) => set({ propulsion })} options={options(PROPULSION)} />
         <Segmented
           label="Calibre"
@@ -84,7 +92,15 @@ export function WeaponForm({ id }: { id?: string }) {
           onChange={(v) => v !== undefined && set({ caliberMm: v === -1 ? 0 : v })}
           options={[...CALIBERS, { value: -1, label: 'Otro' }]}
         />
-        {otherCaliber && <NumberInput label="Calibre" unit="mm" value={w.caliberMm || undefined} onChange={(v) => set({ caliberMm: v ?? 0 })} />}
+        {otherCaliber && (
+          <NumberInput
+            label="Calibre"
+            unit="mm"
+            value={w.caliberMm || undefined}
+            onChange={(v) => set({ caliberMm: v ?? 0 })}
+            hint={w.caliberMm > 0 && `Equivale a ${caliberInches(w.caliberMm)} pulgadas`}
+          />
+        )}
         <NumberInput label="Energía nominal" unit="J" value={w.nominalEnergyJ} onChange={(nominalEnergyJ) => set({ nominalEnergyJ })} />
         <div className="grid2">
           <NumberInput label="Longitud de cañón" unit="mm" value={w.barrelLengthMm} onChange={(barrelLengthMm) => set({ barrelLengthMm })} />

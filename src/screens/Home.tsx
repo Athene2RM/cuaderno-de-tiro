@@ -4,7 +4,9 @@ import { LAST_BACKUP_KEY } from '../db/backup';
 import { initials, useAll, useOpenSession, useProfile } from '../ui/data';
 import { Card, Empty, PhotoView, Stat } from '../ui/components';
 import { date, dateTime, int, num, weaponExtras } from '../ui/format';
-import { OPTICS, PROPULSION } from '../ui/labels';
+import { FIRING_ACTIONS, OPTICS, PROPULSION, WEAPON_TYPES } from '../ui/labels';
+import { caliberInches } from '../lib/units';
+import { isHandgun } from '../lib/weapons';
 import { navigate } from '../ui/router';
 import { badges, bestGroups, bestScores, shootingStreak, shotCountByWeapon, shotsSince, type Context } from '../lib/summary';
 import { profileTags } from '../lib/profile';
@@ -121,13 +123,20 @@ export function Home() {
       {weapons.map((w) => {
         const wBest = allGroups.filter((g) => g.weaponId === w.id).sort((a, b) => a.moa - b.moa)[0];
         const shots = (w.initialShotCount ?? 0) + (counts.get(w.id) ?? 0);
-        const details = [PROPULSION[w.propulsion], `${num(w.caliberMm, 2)} mm`, w.nominalEnergyJ ? `${num(w.nominalEnergyJ)} J` : '', OPTICS[w.optics]]
+        const details = [
+          WEAPON_TYPES[w.type],
+          PROPULSION[w.propulsion],
+          w.action && FIRING_ACTIONS[w.action],
+          caliberInches(w.caliberMm),
+          w.nominalEnergyJ ? `${num(w.nominalEnergyJ)} J` : '',
+          OPTICS[w.optics],
+        ]
           .filter(Boolean)
           .join(' · ');
         const extras = weaponExtras(w);
         return (
           <Card key={w.id} className="weapon-card mini" onClick={() => navigate(`/equipo/arma/${w.id}`)}>
-            <PhotoView photoId={w.photoId} className="weapon-photo" alt={w.name} fallback={w.type === 'pistola' ? '🔫' : '︻デ═一'} />
+            <PhotoView photoId={w.photoId} className="weapon-photo" alt={w.name} fallback={isHandgun(w.type) ? '🔫' : '︻デ═一'} />
             <div className="weapon-info">
               <strong>{w.name}</strong>
               {(w.brand || w.model) && <span className="muted">{[w.brand, w.model].filter(Boolean).join(' ')}</span>}

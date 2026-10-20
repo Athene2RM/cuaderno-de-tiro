@@ -7,10 +7,10 @@ import { Card, Empty, Page, PhotoView, SaveState, Segmented, Stat, Toggle, confi
 import type { SaveStatus } from '../ui/autosave';
 import { saveProfile, useAll, useProfile } from '../ui/data';
 import { date, int, num, weaponExtras } from '../ui/format';
-import { PELLET_SHAPES, PROPULSION } from '../ui/labels';
+import { FIRING_ACTIONS, PELLET_SHAPES, PROPULSION, WEAPON_TYPES } from '../ui/labels';
 import { navigate } from '../ui/router';
-import { gramsToGrains } from '../lib/units';
-import { moveWeapon, sortWeaponsArchivedLast } from '../lib/weapons';
+import { caliberInches, gramsToGrains } from '../lib/units';
+import { isHandgun, moveWeapon, sortWeaponsArchivedLast } from '../lib/weapons';
 
 function download(content: BlobPart, filename: string, type: string) {
   const url = URL.createObjectURL(new Blob([content], { type }));
@@ -136,11 +136,13 @@ export function Equipment() {
             className={`weapon-card ${w.archived ? 'archived' : ''}`}
             onClick={ordering ? undefined : () => navigate(`/equipo/arma/${w.id}`)}
           >
-            <PhotoView photoId={w.photoId} className="weapon-photo" alt={w.name} fallback={w.type === 'pistola' ? '🔫' : '︻デ═一'} />
+            <PhotoView photoId={w.photoId} className="weapon-photo" alt={w.name} fallback={isHandgun(w.type) ? '🔫' : '︻デ═一'} />
             <div className="weapon-info">
               <strong>{w.name}</strong>
               <span className="muted">
-                {[w.brand, w.model].filter(Boolean).join(' ')} · {PROPULSION[w.propulsion]} · {num(w.caliberMm, 2)} mm
+                {[w.brand, w.model].filter(Boolean).join(' ')} · {[WEAPON_TYPES[w.type], PROPULSION[w.propulsion], w.action && FIRING_ACTIONS[w.action], caliberInches(w.caliberMm)]
+                  .filter(Boolean)
+                  .join(' · ')}
               </span>
               {extras && <span className="muted small">{extras}</span>}
               {!ordering && (

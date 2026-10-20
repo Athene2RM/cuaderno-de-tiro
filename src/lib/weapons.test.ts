@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addAccessory, moveWeapon, nextSortOrder, sortWeapons, sortWeaponsArchivedLast } from './weapons';
+import { addAccessory, isHandgun, moveWeapon, nextSortOrder, sortWeapons, sortWeaponsArchivedLast } from './weapons';
 
 const w = (id: string, name: string, sortOrder?: number, archived?: boolean) => ({ id, name, sortOrder, archived });
 
@@ -45,5 +45,14 @@ describe('addAccessory', () => {
     expect(addAccessory([], '  Linterna   láser verde ')).toEqual(['Linterna láser verde']);
     expect(addAccessory(['Bípode'], 'bípode')).toEqual(['Bípode']);
     expect(addAccessory(['Bípode'], '   ')).toEqual(['Bípode']);
+  });
+});
+
+describe('isHandgun', () => {
+  it('cuenta pistolas y revólveres, no carabinas', () => {
+    expect(isHandgun('pistola')).toBe(true);
+    expect(isHandgun('revolver')).toBe(true);
+    expect(isHandgun('carabina')).toBe(false);
+    expect(isHandgun(undefined)).toBe(false);
   });
 });
