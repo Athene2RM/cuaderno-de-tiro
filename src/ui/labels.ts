@@ -1,4 +1,5 @@
 import type {
+  FiringAction,
   Light,
   Optics,
   PelletShape,
@@ -9,7 +10,14 @@ import type {
   WindConstancy,
 } from '../db/types';
 
-export const WEAPON_TYPES: Record<WeaponType, string> = { carabina: 'Carabina', pistola: 'Pistola' };
+export const WEAPON_TYPES: Record<WeaponType, string> = { carabina: 'Carabina', pistola: 'Pistola', revolver: 'Revólver' };
+
+export const FIRING_ACTIONS: Record<FiringAction, string> = {
+  manual: 'Acción manual',
+  dobleAccion: 'Doble acción',
+  semiauto: 'Semiautomática',
+  auto: 'Automática',
+};
 
 export const PROPULSION: Record<Propulsion, string> = {
   pcp: 'PCP',

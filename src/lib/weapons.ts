@@ -1,5 +1,12 @@
 // Orden manual de las armas y datos de su ficha.
 
+import type { WeaponType } from '../db/types';
+
+/** Pistolas y revólveres: se disparan a una o dos manos y usan dianas de pistola. */
+export function isHandgun(type?: WeaponType): boolean {
+  return type === 'pistola' || type === 'revolver';
+}
+
 interface Sortable {
   id: string;
   name: string;
